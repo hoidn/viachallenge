@@ -1,0 +1,43 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<head>
+               <script src="https://cdn.plot.ly/plotly-1.2.0.min.js"></script>
+</head>
+<body style="margin:30px;">
+
+<h3>Subreddit Similarity</h3>
+<p>
+Output of rank 2 truncated singular value decomposition (SVD).
+<p/>
+
+<div id="myDiv" style="width:600px;height:250px;"></div>
+
+<script>
+
+var layout = {
+  showlegend: false,
+  height: 600,
+  width: 1000,
+  hovermode: 'closest',
+  type: 'scatter',
+  xaxis: {showgrid: false, visible: false},
+  yaxis: {showgrid: false, visible: false},
+  paper_bgcolor: 'rgb(243, 243, 243)',
+  plot_bgcolor: 'rgb(243, 243, 243)'
+};
+
+var plot_data = function (data) {
+    Plotly.newPlot('myDiv', [data], layout);
+}
+$.getJSON($SCRIPT_ROOT + '/_get_scatter_data', {
+    //sub: $('input[name="sub"]').val(),
+    }, function(data) {
+        plot_data(data);
+    }
+);
+</script>
+
+</body>
+
+{% endblock %}

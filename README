@@ -1,0 +1,50 @@
+Analysis questions:
+1. The solution to this problem can be approached as a regression where
+we wish to measure the probability of a binary outcome (that a driver
+near the 10-hour shift threshold will cross it) as a function of one or
+more parameters. Features of likely use might include the time of day,
+day of the week, and various quantities derived from the prior activity
+patterns of the driver. I adopt the following simple approach: for
+each driver, I do batch processing in Spark to compute the probability
+distribution P that describes their likelihood of being on-shift as a
+function of time of the day, conditioned on the driver being on-shift
+at a particular time T at which we wish to make the projection. See
+batch.py and projection.py to see how this is implemented.
+
+2. I implemented a browser-based streaming UI. Note that it requires
+prior batch processing (a model for each driver is computed in Spark and
+saved to an sqlite database; time-ordering of pickup and dropoff events
+is also done using spark). The streaming component itself consists of
+two components: a producer that simulates real-time information on taxi
+pickups and dropoffs by reading from the sqlite database, and a consumer
+that records these events and uses the precomputed models to identify
+drivers likely to exceed the 10 hour shift limit. The producer and
+consumer communicate via a pub-sub messaging pattern implemented using
+ZeroMQ. The consumer's Python process also hosts a flask server that
+communicates with an in-browser interface via jQuery.
+
+A list of drivers expected to cross the 30 minute threshold
+(in decreasing order of projected likelihood) within the next
+30 minutes of 4/9/2013, 15:00:00, is included in the text file
+14-09-15-00_near_threshold.txt.
+
+3. I used the Getis Ord statistic to identify hot spots of taxi pickup
+activity (implementation in batch.py). Sites with high activity,
+indicating possible presence of a taxi stand, include airports
+(LaGuardia and JFK), Grand Central Station, and the Port Authority bus
+terminal.
+
+
+Qualitative questions:
+1. For example: day of the week, date of the year, and time of the
+driver's first ride. Doing logistic regression on all these features
+would be a likely improvement on my simple approach.
+
+2. These complications would cause my approach to fail unless an
+additional step were taken to remove spurious rides. Such rides might
+be identifiable by durations much shorter or much longer than that of a
+typical ride.
+
+3. An additional way to identify anomalous rides might be to compare
+nominal speed of travel with realistic values and reject instances in
+which the discrepancy is large.
